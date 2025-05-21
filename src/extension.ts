@@ -9,6 +9,8 @@ import { InlineCompletionProvider } from './providers/inlineCompletionProvider';
 import { ApiKeyManager } from './utils/apiKeyManager';
 import { ChatViewProvider } from './webviews/chatViewProvider';
 import { SettingsViewProvider } from './webviews/settingsViewProvider';
+import { AICodeActionProvider } from './providers/codeActionProvider';
+import { InlineWidgetProvider } from './providers/inlineWidgetProvider';
 
 // Log file name for local logging
 const LOG_FILE = 'eyAgent.log';
@@ -67,6 +69,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             )
         );
         
+        // Register inline suggestion widget via CodeLens
+        context.subscriptions.push(
+            vscode.languages.registerCodeLensProvider(
+                { scheme: 'file', pattern: '**/*.{ts,js,py,java,cs}' },
+                new InlineWidgetProvider(inlineCompletionProvider)
+            )
+        );
+        
         // Create status bar item
         const statusBarItem = vscode.window.createStatusBarItem(
             vscode.StatusBarAlignment.Right,
@@ -91,6 +101,15 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             apiKeyManager,
             statusBarItem
         });
+        
+        // Register AI code actions (lightbulb quick fixes)
+        context.subscriptions.push(
+            vscode.languages.registerCodeActionsProvider(
+                { scheme: 'file', pattern: '**/*.{ts,js,py,java,cs}' },
+                new AICodeActionProvider(apiClient),
+                AICodeActionProvider.metadata
+            )
+        );
         
         logToFile(context, 'Extension activated successfully');
     } catch (error) {

@@ -155,6 +155,28 @@
         "title": "Clear Chat History",
         "category": "eyAgent"
       }
+    ],
+    "keybindings": [
+      {
+        "command": "eyAiAgent.triggerInlineSuggestion",
+        "key": "ctrl+\\",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "eyAiAgent.acceptInlineSuggestion",
+        "key": "tab",
+        "when": "inlineSuggestionVisible"
+      },
+      {
+        "command": "eyAiAgent.nextInlineSuggestion",
+        "key": "ctrl+].",
+        "when": "inlineSuggestionVisible"
+      },
+      {
+        "command": "eyAiAgent.prevInlineSuggestion",
+        "key": "ctrl+[,",
+        "when": "inlineSuggestionVisible"
+      }
     ]
   },
   "scripts": {
