@@ -1,5 +1,5 @@
 {
-  "name": "eyAiAgent",
+  "name": "eyaiagent",
   "displayName": "eyAgent",
   "description": "AI Coding Agent",
   "version": "0.0.1",
@@ -16,6 +16,62 @@
       {
         "command": "eyAiAgent.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "eyAiAgent.setApiKey",
+        "title": "Set GPT-4 API Key"
+      },
+      {
+        "command": "eyAiAgent.removeApiKey",
+        "title": "Remove GPT-4 API Key"
+      },
+      {
+        "command": "eyAiAgent.checkApiKey",
+        "title": "Check GPT-4 API Key Status"
+      },
+      {
+        "command": "eyAiAgent.askGpt4",
+        "title": "Ask GPT-4 (eyAgent)"
+      },
+      {
+        "command": "eyAiAgent.explainCode",
+        "title": "Explain Code (eyAgent)"
+      },
+      {
+        "command": "eyAiAgent.refactorCode",
+        "title": "Refactor Code (eyAgent)"
+      },
+      {
+        "command": "eyAiAgent.generateDoc",
+        "title": "Generate Documentation (eyAgent)"
+      },
+      {
+        "command": "eyAiAgent.explainError",
+        "title": "Explain Error (eyAgent)"
+      },
+      {
+        "command": "eyAiAgent.generateUnitTest",
+        "title": "Generate Unit Test (eyAgent)"
+      },
+      {
+        "command": "eyAiAgent.chatWithContext",
+        "title": "Chat with Context (eyAgent)"
+      },
+      {
+        "command": "eyAiAgent.clearChatHistory",
+        "title": "Clear Chat History (eyAgent)"
+      },
+      {
+        "command": "eyAiAgent.insertSuggestion",
+        "title": "Insert Suggestion at Cursor (eyAgent)"
+      },
+      {
+        "command": "eyAiAgent.toggleAgentMode",
+        "title": "Toggle Agent Mode (eyAgent)"
+      },
+      {
+        "command": "eyAiAgent.openAgentPanel",
+        "title": "Open Agent Panel (eyAgent)"
       }
     ]
   },
@@ -34,16 +90,20 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.100.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
+    "@types/node-fetch": "^2.6.12",
+    "@types/vscode": "^1.100.0",
     "@typescript-eslint/eslint-plugin": "^8.31.1",
     "@typescript-eslint/parser": "^8.31.1",
-    "eslint": "^9.25.1",
-    "esbuild": "^0.25.3",
-    "npm-run-all": "^4.1.5",
-    "typescript": "^5.8.3",
     "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.5.2"
+    "@vscode/test-electron": "^2.5.2",
+    "esbuild": "^0.25.3",
+    "eslint": "^9.25.1",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "node-fetch": "^2.7.0"
   }
 }
