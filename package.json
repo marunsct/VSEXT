@@ -1,77 +1,159 @@
 {
   "name": "eyaiagent",
   "displayName": "eyAgent",
-  "description": "AI Coding Agent",
+  "description": "AI Coding Assistant - Your in-editor coding companion",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.100.0"
   },
   "categories": [
-    "Other"
+    "Other",
+    "Programming Languages",
+    "Machine Learning",
+    "Snippets"
   ],
-  "activationEvents": [],
+  "icon": "resources/icons/eyAgent.png",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "eyAgent-sidebar",
+          "title": "eyAgent AI Assistant",
+          "icon": "resources/icons/eyAgent-small.png"
+        }
+      ]
+    },
+    "views": {
+      "eyAgent-sidebar": [
+        {
+          "type": "webview",
+          "id": "eyAgentChatView",
+          "name": "Chat"
+        },
+        {
+          "type": "webview",
+          "id": "eyAgentSettingsView",
+          "name": "Settings"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "eyAgent",
+      "properties": {
+        "eyAgent.defaultModel": {
+          "type": "string",
+          "default": "gpt-4",
+          "enum": ["gpt-4", "gpt-3.5-turbo", "claude-3-opus", "claude-3-sonnet", "gemini-pro", "gemini-1.5-pro", "custom"],
+          "enumDescriptions": [
+            "OpenAI GPT-4",
+            "OpenAI GPT-3.5 Turbo",
+            "Anthropic Claude 3 Opus",
+            "Anthropic Claude 3 Sonnet",
+            "Google Gemini Pro",
+            "Google Gemini 1.5 Pro",
+            "Custom Model API"
+          ],
+          "description": "Default AI model to use for code completions and chat"
+        },
+        "eyAgent.inlineCompletions.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable inline code completions"
+        },
+        "eyAgent.inlineCompletions.typingDebounceMs": {
+          "type": "number",
+          "default": 500,
+          "description": "Minimum time in milliseconds after typing before showing completions"
+        },
+        "eyAgent.inlineCompletions.excludedLanguages": {
+          "type": "array",
+          "default": ["plaintext", "markdown"],
+          "description": "Languages to disable inline completions for"
+        },
+        "eyAgent.inlineCompletions.languageSettings": {
+          "type": "object",
+          "default": {},
+          "description": "Language-specific settings for inline completions",
+          "markdownDescription": "Language-specific settings for inline completions. Example: `{\"typescript\": {\"contextLines\": 50, \"fileImportance\": 7}}`"
+        },
+        "eyAgent.showStatusBarItem": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show eyAgent status in the status bar"
+        },
+        "eyAgent.completionDelay": {
+          "type": "number",
+          "default": 300,
+          "description": "Delay in milliseconds before showing completions"
+        },
+        "eyAgent.customModelEndpoint": {
+          "type": "string",
+          "default": "",
+          "description": "Custom model API endpoint URL (only used when model is set to 'custom')"
+        }
+      }
+    },
     "commands": [
       {
-        "command": "eyAiAgent.helloWorld",
-        "title": "Hello World"
-      },
-      {
         "command": "eyAiAgent.setApiKey",
-        "title": "Set GPT-4 API Key"
+        "title": "eyAgent: Set API Key",
+        "category": "eyAgent"
       },
       {
-        "command": "eyAiAgent.removeApiKey",
-        "title": "Remove GPT-4 API Key"
+        "command": "eyAiAgent.manageModels",
+        "title": "eyAgent: Manage AI Models",
+        "category": "eyAgent"
       },
       {
-        "command": "eyAiAgent.checkApiKey",
-        "title": "Check GPT-4 API Key Status"
-      },
-      {
-        "command": "eyAiAgent.askGpt4",
-        "title": "Ask GPT-4 (eyAgent)"
+        "command": "eyAiAgent.showSidebar",
+        "title": "eyAgent: Open Sidebar",
+        "category": "eyAgent",
+        "icon": "$(comment-discussion)"
       },
       {
         "command": "eyAiAgent.explainCode",
-        "title": "Explain Code (eyAgent)"
+        "title": "Explain Code",
+        "category": "eyAgent"
       },
       {
         "command": "eyAiAgent.refactorCode",
-        "title": "Refactor Code (eyAgent)"
+        "title": "Refactor Code",
+        "category": "eyAgent"
       },
       {
         "command": "eyAiAgent.generateDoc",
-        "title": "Generate Documentation (eyAgent)"
+        "title": "Generate Documentation",
+        "category": "eyAgent"
       },
       {
         "command": "eyAiAgent.explainError",
-        "title": "Explain Error (eyAgent)"
+        "title": "Explain Error",
+        "category": "eyAgent"
       },
       {
         "command": "eyAiAgent.generateUnitTest",
-        "title": "Generate Unit Test (eyAgent)"
-      },
-      {
-        "command": "eyAiAgent.chatWithContext",
-        "title": "Chat with Context (eyAgent)"
-      },
-      {
-        "command": "eyAiAgent.clearChatHistory",
-        "title": "Clear Chat History (eyAgent)"
+        "title": "Generate Unit Test",
+        "category": "eyAgent"
       },
       {
         "command": "eyAiAgent.insertSuggestion",
-        "title": "Insert Suggestion at Cursor (eyAgent)"
+        "title": "Insert Suggestion at Cursor",
+        "category": "eyAgent"
       },
       {
-        "command": "eyAiAgent.toggleAgentMode",
-        "title": "Toggle Agent Mode (eyAgent)"
+        "command": "eyAiAgent.toggleInlineCompletions",
+        "title": "Toggle Inline Completions",
+        "category": "eyAgent",
+        "icon": "$(lightbulb)"
       },
       {
-        "command": "eyAiAgent.openAgentPanel",
-        "title": "Open Agent Panel (eyAgent)"
+        "command": "eyAiAgent.clearChatHistory",
+        "title": "Clear Chat History",
+        "category": "eyAgent"
       }
     ]
   },
@@ -87,7 +169,7 @@
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "check-types": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "@vscode/test-cli --extensionDevelopmentPath=. --extensionTestsPath=./out/test/index.js"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${nonce}'; style-src ${cspSource};">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>eyAgent Copilot</title>
+  <link rel="stylesheet" href="${cspSource}/media/chat.css" />
+</head>
+<body>
+  <div class="copilot-header">
+    <img src="${cspSource}/icons/eyAgent.svg" alt="eyAgent icon" class="copilot-icon" />
+    <span class="copilot-title">eyAgent Copilot</span>
+    <button id="clear" class="header-btn">Clear</button>
+  </div>
+  <div id="chat" class="copilot-chat"></div>
+  <div class="copilot-input-container">
+    <textarea id="input" class="copilot-textarea" placeholder="Ask a question or type a prompt..."></textarea>
+    <button id="send" class="copilot-send-btn">Ask</button>
+  </div>
+  <script nonce="${nonce}" src="${cspSource}/media/chat.js"></script>
+</body>
+</html>

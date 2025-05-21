@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>eyAgent Copilot Settings</title>
+  <link rel="stylesheet" href="${cspSource}/media/settings.css" />
+</head>
+<body>
+  <div class="copilot-header">
+    <img src="${cspSource}/icons/eyAgent.svg" alt="eyAgent icon" class="copilot-icon" />
+    <span class="copilot-title">Copilot Settings</span>
+  </div>
+  <div class="settings-container">
+    <div class="section">
+      <button id="toggleInline" class="copilot-btn">Toggle Inline Suggestions</button>
+    </div>
+    <div class="section">
+      <label for="defaultModel">Default Model</label>
+      <select id="defaultModel" class="copilot-select"></select>
+    </div>
+    <div class="section">
+      <h3>API Keys</h3>
+      <div id="apiKeys"></div>
+    </div>
+  </div>
+  <script nonce="${nonce}" src="${cspSource}/media/settings.js"></script>
+</body>
+</html>

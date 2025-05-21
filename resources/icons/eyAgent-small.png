@@ -1,0 +1,4 @@
+// Sample PNG file content (base64 encoded, decoded to binary at runtime)
+// This is a placeholder for a real PNG file
+// In a real project, you would use actual images
+console.log('This is a placeholder file');
