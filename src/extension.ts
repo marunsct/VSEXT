@@ -422,3 +422,11 @@ ${response.text}`, language: 'markdown' });
 export function deactivate(): void {
     console.log('eyAgent extension is now deactivated');
 }
+
+/*
+TODO:
+OAuth flows (would need integration with GitHub’s OAuth and token storage).
+Privacy/redaction controls (settings + context filter).
+Per-language metrics and telemetry dashboards.
+Sidebar toolbar with copy/insert buttons and feedback: update chat.js to add buttons on each message bubble.
+*/

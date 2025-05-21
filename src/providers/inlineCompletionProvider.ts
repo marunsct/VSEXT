@@ -218,7 +218,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
     }
 
     /**
-     * Build smart context around the cursor for completion
+     * Build smart context around the cursor for completion, applying redaction
      */
     private getSmartCompletionContext(document: vscode.TextDocument, position: vscode.Position, language: string) {
         const cfg = this.languageConfig[language] || this.languageConfig.default;
@@ -226,9 +226,18 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         const lines = [];
         for (let i = start; i <= position.line; i++) {
             const txt = document.lineAt(i).text;
-            lines.push(i === position.line ? txt.slice(0, position.character) : txt);
+            const lineText = i === position.line ? txt.slice(0, position.character) : txt;
+            lines.push(lineText);
         }
-        const prefix = lines.join('\n');
+        let prefix = lines.join('\n');
+        // Redact sensitive lines based on user patterns
+        const patterns: string[] = vscode.workspace.getConfiguration('eyAgent').get('redaction.patterns', []);
+        if (patterns.length) {
+            const regexes = patterns.map(p => new RegExp(p));
+            prefix = prefix.split('\n')
+                .map(l => regexes.some(r => r.test(l)) ? '[REDACTED]' : l)
+                .join('\n');
+        }
         // Include imports or declarations if important
         let imports = '';
         if (cfg.fileImportance > 3) {

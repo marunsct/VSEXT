@@ -94,6 +94,12 @@
           "type": "string",
           "default": "",
           "description": "Custom model API endpoint URL (only used when model is set to 'custom')"
+        },
+        "eyAgent.redaction.patterns": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "List of regex patterns; matching lines will be redacted from context before sending to AI"
         }
       }
     },

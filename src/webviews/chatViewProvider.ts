@@ -184,17 +184,29 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
             const document = editor.document;
             const text = document.getText();
+            // Apply redaction patterns
+            const patterns: string[] = vscode.workspace.getConfiguration('eyAgent').get('redaction.patterns', []);
+            let sanitized = text;
+            if (patterns.length) {
+                const regexes = patterns.map(p => new RegExp(p, 'g'));
+                sanitized = text.split('\n')
+                    .map(l => regexes.some(r => r.test(l)) ? '[REDACTED]' : l)
+                    .join('\n');
+            }
             
             // If file is too large, only include visible portion
-            if (text.length > 5000) {
+            if (sanitized.length > 5000) {
                 const visibleRanges = editor.visibleRanges;
                 if (visibleRanges.length > 0) {
-                    const visibleText = document.getText(visibleRanges[0]);
+                    const visibleText = sanitized.substring(
+                        document.offsetAt(visibleRanges[0].start),
+                        document.offsetAt(visibleRanges[0].end)
+                    );
                     return `File: ${document.fileName} (visible portion)\n\n${visibleText}`;
                 }
             }
             
-            return `File: ${document.fileName}\n\n${text}`;
+            return `File: ${document.fileName}\n\n${sanitized}`;
         } catch (error) {
             console.error('Error getting workspace context:', error);
             return undefined;
