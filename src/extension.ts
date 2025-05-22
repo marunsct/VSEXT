@@ -11,6 +11,7 @@ import { ChatViewProvider } from './webviews/chatViewProvider';
 import { SettingsViewProvider } from './webviews/settingsViewProvider';
 import { AICodeActionProvider } from './providers/codeActionProvider';
 import { InlineWidgetProvider } from './providers/inlineWidgetProvider';
+import { TelemetryManager } from './utils/telemetryManager';
 
 // Log file name for local logging
 const LOG_FILE = 'eyAgent.log';
@@ -109,6 +110,35 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
                 new AICodeActionProvider(apiClient),
                 AICodeActionProvider.metadata
             )
+        );
+        
+        // Initialize telemetry
+        const telemetry = new TelemetryManager(context);
+
+        // NOTE: Telemetry for inline completions is recorded inside the provider implementation
+
+        // Intercept command executions to record telemetry
+        const originalExecute = vscode.commands.executeCommand;
+        vscode.commands.executeCommand = async (cmd, ...args) => {
+            telemetry.recordCommand(cmd as string);
+            return originalExecute(cmd, ...args);
+        };
+
+        // Expose a telemetry dashboard command
+        context.subscriptions.push(
+            vscode.commands.registerCommand('eyAiAgent.showTelemetry', () => {
+                const data = telemetry.getMetrics();
+                const panel = vscode.window.createWebviewPanel(
+                    'eyAgentTelemetry',
+                    'eyAgent Telemetry',
+                    vscode.ViewColumn.One,
+                    {}
+                );
+                panel.webview.html = `<!DOCTYPE html><html><body><h2>Telemetry</h2>
+                    <h3>Completions</h3><pre>${JSON.stringify(data.completions, null, 2)}</pre>
+                    <h3>Commands</h3><pre>${JSON.stringify(data.commands, null, 2)}</pre>
+                    </body></html>`;
+            })
         );
         
         logToFile(context, 'Extension activated successfully');
@@ -426,7 +456,37 @@ export function deactivate(): void {
 /*
 TODO:
 OAuth flows (would need integration with GitHub’s OAuth and token storage).
-Privacy/redaction controls (settings + context filter).
-Per-language metrics and telemetry dashboards.
-Sidebar toolbar with copy/insert buttons and feedback: update chat.js to add buttons on each message bubble.
+
+
+• Out-of-the-box keybindings
+– Copilot ships with intuitive shortcuts (e.g. Alt+\, Tab to accept, Ctrl+]/[ to cycle).
+– eyAgent requires users to bind commands themselves in Settings.
+
+• Sign-in/OAuth and account/license UI
+– Copilot integrates with GitHub OAuth, shows license status, and enforces org policies.
+– eyAgent only supports manual API key entry.
+
+• Privacy/redaction & policy controls
+– Copilot warns when sending private code, lets you exclude paths or files.
+– eyAgent has basic redaction patterns but no UI for opt-out or per-workspace policies.
+
+• Rich Chat panel
+– Copilot Chat offers full-width, dockable panels with history, threaded follow-ups, usage stats, feedback thumbs, and copy/insert buttons per snippet.
+– eyAgent’s sidebar is functional but minimal—no feedback on suggestions or usage metrics in the UI.
+
+• Per-language suggestion settings
+– Copilot lets you choose inline vs. block vs. whole-line suggestions per language.
+– eyAgent has only global on/off and debounce settings.
+
+• Lightbulb code-action integration
+– Copilot surfaces “Suggest code”, “Explain this code” right in the editor lightbulb menu.
+– eyAgent added a QuickFix provider stub but lacks full context-aware code actions.
+
+• Usage dashboards & feedback
+– Copilot shows your usage, remaining quota, and lets you rate suggestions.
+– eyAgent logs telemetry and exposes raw JSON but no polished dashboard or rating buttons.
+
+• Animations & polish
+– Copilot UIs have smooth fades, hover states, spinners, and VS Code theming.
+– eyAgent UIs are functional but largely “static.”
 */

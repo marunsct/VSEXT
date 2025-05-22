@@ -160,6 +160,11 @@
         "command": "eyAiAgent.clearChatHistory",
         "title": "Clear Chat History",
         "category": "eyAgent"
+      },
+      {
+        "command": "eyAiAgent.showTelemetry",
+        "title": "eyAgent: Show Telemetry Dashboard",
+        "category": "eyAgent"
       }
     ],
     "keybindings": [

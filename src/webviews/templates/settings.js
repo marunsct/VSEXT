@@ -26,8 +26,8 @@
       const btn = document.createElement('button');
       btn.textContent = has ? 'Remove' : 'Set';
       btn.onclick = () => {
-        if (has) vscode.postMessage({ type: 'removeApiKey', modelId: id });
-        else vscode.postMessage({ type: 'setApiKey', modelId: id });
+        if (has) {vscode.postMessage({ type: 'removeApiKey', modelId: id });}
+        else {vscode.postMessage({ type: 'setApiKey', modelId: id });}
       };
       div.appendChild(btn);
       apiKeysDiv.appendChild(div);
