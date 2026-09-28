@@ -1,6 +1,6 @@
 # AgentCanvas — Visual Agentic Workflow Builder
 
-**Functional & Technical Specification — v0.1 (Draft)**
+**Functional & Technical Specification — v0.2 (Draft)** — v0.2 adds persistence, multi-database data modelling and self-improving agents (docs 08–10).
 Working name: **AgentCanvas** (rename freely).
 Target frameworks: **LangChain 1.4+, LangGraph 1.2+, Deep Agents 0.7+, LangSmith** (researched against the official `langchain-ai/docs`, `langchain-ai/deepagents`, `langchain-ai/langchain` and `langchain-ai/langgraph` repositories, September 2026).
 
@@ -18,6 +18,9 @@ Target frameworks: **LangChain 1.4+, LangGraph 1.2+, Deep Agents 0.7+, LangSmith
 | 5 | [05-workspaces-scripting-events.md](./05-workspaces-scripting-events.md) | Code workspaces, script nodes, custom nodes SDK, custom events/triggers/hooks |
 | 6 | [06-roadmap-risks.md](./06-roadmap-risks.md) | Phased delivery plan, MVP cut, risks, open questions, success metrics |
 | 7 | [07-worked-example.md](./07-worked-example.md) | End-to-end example: canvas → IR → generated Python → deployment |
+| 8 | [08-persistence-memory-data-modeling.md](./08-persistence-memory-data-modeling.md) | Persistence Map (6 layers), checkpointer bindings (Postgres, Redis, MongoDB, …), long-term memory spaces, RoutedStore over multiple DBs, caching, **Data Studio** (visual polyglot data modelling), data nodes & tools, side-effect correctness |
+| 9 | [09-self-improving-agents.md](./09-self-improving-agents.md) | Learning ladder (memory → examples → skills → prompts → routing → fine-tuning), feedback capture, Learning Loop nodes, gates, canary & rollback |
+| 10 | [10-improvement-plan.md](./10-improvement-plan.md) | Research-driven improvement plan v0.1 → v0.2 and beyond |
 
 Requirement IDs: `FR-` functional, `NFR-` non-functional, `TR-` technical. Priority: **P0** (MVP), **P1** (GA), **P2** (later).
 
@@ -51,6 +54,8 @@ A literal "what you see is what you get" for agents has to solve something Comfy
 | D8 | **All user code runs in sandboxes**, never inside the control plane. | Security; multi-tenancy. |
 | D9 | **Deep Agents is the default "Agent" widget**; plain `create_agent` is the "Lite Agent". | Deep Agents gives planning, virtual filesystem, subagents, skills, memory, summarization and HITL out of the box — the batteries non-coders need. |
 | D10 | **Canvas-native AI Copilot** that edits the IR through the same tools a human uses (add node, wire, configure), is itself a Deep Agent, and must pass the validator before changes apply. | "Describe your workflow" → graph; also lint/auto-fix/explain. |
+| D11 | **Persistence is explicit and layered** (execution state / long-term memory / agent files / business data / caches / learning artifacts), bound per environment to real databases, with a visual **Data Studio** for business data. | Agents that remember, learn and act on data need clear ownership, retention and safety per layer (doc 08). |
+| D12 | **Self-improvement is a governed ladder**, not magic: every learned artifact is versioned, evaluated, reviewable and revertible. | Learning without gates degrades production silently (doc 09). |
 
 ## 4. How AgentCanvas maps to the LangChain ecosystem
 
@@ -92,6 +97,10 @@ A literal "what you see is what you get" for agents has to solve something Comfy
 14. **Templates gallery** — research agent, RAG, SQL agent, support triage, coding agent, data analyst, content pipeline, etc.
 15. **Governance** — RBAC/ABAC, audit log, secrets vault, model allow-lists (via LLM Gateway policies), spend limits, data residency.
 16. **Eject & import** — export clean code; import an existing LangGraph project and get a (read-mostly) canvas view.
+17. **Pluggable persistence** — choose checkpoint DB per environment (Postgres, Redis, MongoDB, DynamoDB, …), TTL/retention, encryption, thread browser (doc 08).
+18. **Memory Spaces & Memory Inspector** — typed long-term memory across multiple databases via a routed store (doc 08).
+19. **Data Studio** — draw your data model once, map it to Postgres/Redis/Mongo/Neo4j/Elastic/vector DBs, generate models, migrations, repositories and safe agent tools (doc 08).
+20. **Self-improving agents** — feedback capture, example banks, prompt optimisation, skill learning, bandits and fine-tuning behind eval gates (doc 09).
 
 ## 6. Glossary
 
@@ -111,4 +120,8 @@ A literal "what you see is what you get" for agents has to solve something Comfy
 | **Run** | One execution of a workflow on a thread (LangGraph run / LangSmith trace). |
 | **Thread** | A persistent conversation/execution context (checkpoint lineage). |
 | **Trigger** | Something that starts a run: manual, API, webhook, cron, event, channel message. |
+| **Persistence binding** | Mapping of a logical persistence need (checkpointer, store, cache, connection) to a physical database in an environment. |
+| **Memory Space** | A typed, namespaced region of long-term memory (store) with index, TTL, writers and PII policy. |
+| **Data Model** | A Data Studio ER model; entities map to one or more physical stores. |
+| **Learning Loop** | A workflow that turns signals (feedback, outcomes, evals) into versioned artifacts (memories, examples, prompts, skills, models) behind gates. |
 | **Target** | A code-generation/deployment target (Python-LangGraph, Managed Deep Agents project, TS, etc.). |

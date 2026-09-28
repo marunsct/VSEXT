@@ -35,6 +35,8 @@
 - Hybrid/BYOC and air-gapped self-hosted editions; VS Code extension.
 - Dynamic subagents & interpreters (as they exit beta upstream).
 
+> **v0.2 delta:** persistence, Data Studio and self-improvement scope is sequenced into these phases in [10-improvement-plan.md §3](./10-improvement-plan.md#3-updated-delivery-sequencing-delta-to-doc-06). Add ~2 engineers (data modelling/codegen, persistence/data plane) and ~0.5 ML engineer (learning loops) to the team below.
+
 ## 2. Suggested team (for MVP → GA)
 
 | Area | Headcount |
@@ -59,6 +61,9 @@
 | R6 | **Overlap with LangSmith Fleet / Studio / MDA** | Positioning | Position as the *visual IDE + compiler* that targets those platforms (and self-hosted), with deeper graph-tier control, workspaces, events and exportable code. Integrate, don't compete. Consider partnership. |
 | R7 | **Performance of canvas at scale** | UX | Virtualization, LOD, WebGL layer fallback, subgraph collapse. |
 | R8 | **Non-determinism makes tests flaky** | Eval trust | Mock mode, cassettes, repetitions & statistical comparisons in experiments. |
+| R10 | **Persistence backend immaturity** — non-Postgres checkpointers/stores and Agent Server custom checkpointer/store hooks are alpha or community-maintained | Data loss / resume failures | Postgres default; conformance gate; staged rollout per backend; clear support tiers |
+| R11 | **Self-improvement regressions or memory poisoning** | Quality & safety | Gated ladder (doc 09), quarantine, provenance, auto-rollback |
+| R12 | **Business-data access by agents** | Data leaks | Scoped repositories, least privilege, HITL writes, audit |
 | R9 | **Licensing** | Legal | Generated code & runtime helper Apache-2.0; verify licenses of LangGraph Agent Server for self-hosted redistribution (the open-source `langgraph dev` server vs licensed Agent Server) — design the data plane to work with either. |
 
 ## 4. Open questions (decisions needed)

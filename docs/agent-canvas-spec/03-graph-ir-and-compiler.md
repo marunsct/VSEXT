@@ -43,6 +43,10 @@ This is the heart of the product: how a picture becomes a correct, idiomatic Lan
   "edges": [ … ],                      // flow, wiring, data edges
   "groups": [ … ],                     // visual groups & subgraph definitions
   "triggers": [ … ],
+  "persistence": { … },               // v0.2: checkpointer/store/cache/memory spaces (doc 08 §6)
+  "data_models": [ … ],               // v0.2: referenced Data Studio models (doc 08 §5)
+  "connections": [ … ],               // v0.2: logical DB connections, bound per environment
+  "learning": { "feedback_keys": [ … ], "loops": [ … ] },   // v0.2: doc 09
   "settings": {
     "recursion_limit": 50,
     "durability": "async",             // exit | async | sync
@@ -183,6 +187,14 @@ Special node IDs `START` and `END` are implicit.
 | `E040` | error | `execute`/shell capability without sandbox backend |
 | `E050` | error | Secret literal detected in config |
 | `E060` | error | Send target input type incompatible with payload |
+| `E070` | error | Node performs a DB/external write **and** calls `interrupt()` (write would repeat on resume) — split the node |
+| `E071` | error | Data node/tool without a resolved tenant/user scope for a tenant-scoped entity |
+| `E072` | error | Memory Space namespace template uses values produced by a model or tool (allowed: `context`, authenticated identity, and input channels marked `trusted`, e.g. webhook payload fields) |
+| `E073` | error | Persistence binding missing for the target environment |
+| `W070` | warning | Write node with retries but no idempotency key |
+| `W071` | warning | Concurrent writes to the same entity from parallel branches without a conflict strategy |
+| `W072` | warning | Checkpointer binding has not passed the conformance suite |
+| `W073` | warning | Append-heavy channel without `DeltaChannel` in a long-running chat workflow |
 | `W001` | warning | Cycle without guard (router exit, counter, or explicit `recursion_limit` override) |
 | `W002` | warning | MCP tool with `destructive_hint` not behind approval |
 | `W003` | warning | Channel written but never read |
@@ -268,6 +280,11 @@ Validation runs incrementally (dependency-tracked per node) and is shared by the
 | MCP server | `from langchain.mcp import MCPAdapter` → `tools = await MCPAdapter(<target>).list_tools()` in an async lazy factory |
 | Guardrail widgets | `PIIMiddleware`, `ToolCallLimitMiddleware`, `ModelCallLimitMiddleware`, `ModelFallbackMiddleware`, `ModelRetryMiddleware`, `ToolRetryMiddleware`, `SummarizationMiddleware`, `ContextEditingMiddleware`, `LLMToolSelectorMiddleware`, `ProviderToolSearchMiddleware`, … |
 | Structured output | Pydantic model generated in `state.py`/`schemas.py`; `response_format=Model` (auto strategy) or `ToolStrategy(Model)` / `ProviderStrategy(Model)` |
+| Checkpointer binding | Agent Server targets: `langgraph.json` `checkpointer` (`backend`, `ttl`) or custom checkpointer module; standalone: `compile(checkpointer=AsyncPostgresSaver/…)`; durability via run config |
+| Store / Memory Spaces | `langgraph.json` `store` (`index`, `ttl`) or custom store module (e.g. `RoutedStore`); memory tools & Recall/Remember nodes use `runtime.store` with generated namespace builders |
+| Cache binding | `compile(cache=RedisCache/InMemoryCache)` + per-node `CachePolicy` |
+| Data Studio entities & data nodes | `data/models`, `data/schemas`, `data/repositories`, `data/tools.py`, `data/migrations` (doc 08 §5.4) |
+| Learning artifacts | prompt refs resolved at runtime by tag; few-shot selector middleware; learning loops compiled as separate graphs registered in `langgraph.json` |
 | Custom stream events | `get_stream_writer()` in scripts; UI subscribes to `custom` mode |
 | Trigger (cron/webhook) | `langgraph.json` crons / webhook config in deploy manifest, not graph code |
 

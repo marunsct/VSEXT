@@ -29,6 +29,9 @@ Opens the Workspace, creates `nodes/salesforce_upsert.py` using the `@canvas_nod
 **J4 — Reviewer handles approvals (P4)**
 Gets a Slack/email notification; opens the Inbox; sees the pending tool call (`send_email` with args), the agent's reasoning excerpt, and the trace; chooses **Edit** (fixes the subject line) → **Approve**. The run resumes (`Command(resume=…)`).
 
+**J6 — Persistent, self-improving assistant with company data (P2/P3)**
+The architect opens **Data Studio**, imports the existing CRM Postgres schema (reverse engineering), adds a Redis `SessionState` entity with a 1-hour TTL, marks `email` as PII and `tenant_id` as the tenant scope, and generates data tools (`search_customers`, `get_ticket`, `update_ticket_status` — writes require approval). In the workflow's **Persistence panel** they bind the checkpointer to the company Postgres in prod (SQLite in dev), set a 30-day thread TTL and enable encryption. They add Memory Spaces `user_profile` (Postgres store) and `episodes` (MongoDB vector search) behind one routed store, drop a *Recall* node before the agent and enable memory tools. Finally they add the *Nightly self-improvement loop* template: HITL edits and 👎 feedback become examples and prompt-optimisation input; candidates pass an eval gate and a human review before a 10 % canary.
+
 **J5 — Production incident (P3/P5)**
 An alert fires (LangSmith online eval score drop). The engineer opens the failing trace; the canvas overlays the trace; the failing tool node is red; engineer pins the failing input, fixes the prompt, re-runs from that node only (cache), adds the case to the regression dataset, publishes v1.4.1 through the eval gate, and rolls back instantly if needed.
 
@@ -45,7 +48,10 @@ An alert fires (LangSmith online eval score drop). The engineer opens the failin
 │ Outline  │        ▲ model  ▲ tools                                  │ ─ Run/State   │
 │ State    │   [ChatModel]  [MCP Server]                              │ ─ Approvals   │
 │ Files    │                                                          │ ─ Copilot     │
-│ Evals    │                                                          │ ─ Code view   │
+│ Data     │                                                          │ ─ Code view   │
+│ Memory   │                                                          │ ─ Persistence │
+│ Evals    │                                                          │               │
+│ Learning │                                                          │               │
 │ Versions │                                                          │               │
 ├──────────┴──────────────────────────────────────────────────────────┴───────────────┤
 │ Bottom dock: Timeline scrubber │ Logs │ Problems │ Terminal │ Traces │ Cost/Latency    │
@@ -108,7 +114,8 @@ Three switchable main views (same IR): **Canvas**, **Code** (read-only generated
 | FR-STATE-02 | Separate **Input schema**, **Output schema**, and **Context schema** (run-scoped, immutable config such as `user_id`, `tenant`, feature flags — compiles to `context_schema`/`Runtime.context`). | P0 |
 | FR-STATE-03 | Presets: *Chat* (`messages` with `add_messages`), *Agent* (Deep Agents state incl. `files`, optional `todos`), *Pipeline* (typed fields). | P0 |
 | FR-STATE-04 | Each node declares which channels it reads and writes; the canvas shows read/write badges; the validator warns about channels never written or never read. | P1 |
-| FR-STATE-05 | Schema migrations: renaming/removing channels on a published workflow triggers a migration wizard (because persisted threads contain old checkpoints). | P2 |
+| FR-STATE-05 | Schema migrations: renaming/removing channels on a published workflow triggers a migration wizard (because persisted threads contain old checkpoints); publish runs a **resume-compatibility check** (can threads created by the previous version resume on the new one?). Promoted to P1 in v0.2. | P1 |
+| FR-STATE-06 | Channels can be typed with **Data Studio entities** (`Customer`, `Ticket`) and marked as `DeltaChannel` for append-heavy data; the designer shows estimated checkpoint growth per turn. | P1 |
 
 ### 4.5 Agent composer (FR-AGENT)
 
@@ -122,7 +129,7 @@ The **Deep Agent** widget is the flagship. It exposes every `create_deep_agent` 
 | FR-AGENT-04 | Subagents editor: add *Declarative subagent* (name, description, system prompt, model, tools, middleware, skills, permissions, interrupt_on, response_format), *Compiled subagent* (link any sub-workflow on the canvas), *Forked subagent* (inherits parent context), *Async subagent* (remote/ASGI deployment; launch/check/update/cancel/list tools). Each subagent is also visible as a nested canvas. | P0 (sync), P1 (async/forked/dynamic) |
 | FR-AGENT-05 | Backend chooser: *State* (ephemeral per thread), *Store* (persistent; namespace per user / assistant / thread / org), *Local filesystem* (dev only), *Sandbox* (Daytona, Modal, Runloop, E2B, Vercel, AWS AgentCore, LangSmith Sandboxes, Docker; thread- or assistant-scoped), *Context Hub* (versioned in LangSmith), *Composite* (route path prefixes to backends, e.g. `/memories/` → Store, `/workspace/` → Sandbox). | P0 (State/Store/Composite), P1 (sandboxes, Context Hub) |
 | FR-AGENT-06 | Skills manager: attach skills (folders with `SKILL.md` + `scripts/`, `references/`, `assets/`) from the Workspace, Context Hub or marketplace; per-subagent skill selection; read-only vs writable; write-approval. | P1 |
-| FR-AGENT-07 | Memory manager: `AGENTS.md`-style memory files; scope (agent / user / org); read-only vs writable; episodic memory search toggle; background consolidation schedule. | P1 |
+| FR-AGENT-07 | Memory manager: `AGENTS.md`-style memory files; scope (agent / user / org); read-only vs writable; episodic memory search toggle; background consolidation schedule. Memory is configured through **Memory Spaces** (doc 08 §3) so the same spaces are shared by agent file routes, memory tools and Recall/Remember nodes. | P1 |
 | FR-AGENT-08 | Harness/Provider profile selection (deepagents `HarnessProfile` / `ProviderProfile`) with an override editor. | P2 |
 | FR-AGENT-09 | "Explode to graph": convert a Lite Agent into an explicit Graph-tier ReAct loop (model node + tool node + conditional edge) for full control; and "Collapse to agent" inverse where pattern matches. | P1 |
 | FR-AGENT-10 | Structured output designer: define the response schema visually (fields, types, enums, descriptions), choose strategy (provider-native vs tool-calling), preview JSON Schema/Pydantic. | P0 |
@@ -270,6 +277,22 @@ Manual, API, Webhook (signed), Cron, Event bus (internal & external: Kafka, SQS,
 | FR-COST-02 | Actual cost per run/node from traces; budgets and alerts. | P0 (actuals) |
 | FR-COST-03 | Suggestions: cheaper model for subagents, prompt caching opportunities, summarization thresholds, tool pruning (`LLMToolSelectorMiddleware`, provider tool search). | P2 |
 
+### 4.20 Persistence (FR-PER) — summary; full spec in doc 08
+
+Persistence panel per workflow: checkpointer binding per environment (platform / Postgres / Redis / MongoDB / DynamoDB-Valkey / Cosmos / CockroachDB / SQLite / memory / custom), durability mode (`exit`/`async`/`sync`), TTL & pruning, `DeltaChannel` optimisation, encryption, subgraph persistence modes, conformance gate for non-default backends, thread browser (search, inspect, copy, export, delete). Requirements FR-PER-01…10.
+
+### 4.21 Long-term memory & caching (FR-MEM, FR-CACHE) — summary; full spec in doc 08
+
+Memory Spaces (typed, namespaced, indexed, TTL, writers, PII policy), Recall / Remember / Forget nodes, generated memory tools, Memory Inspector, episodic memory, background consolidation, memory safety; **RoutedStore** to spread memory across several databases; cache bindings, node caches, semantic LLM cache. Requirements FR-MEM-01…08, FR-CACHE-01…05.
+
+### 4.22 Data Studio — visual data modelling (FR-DM) — summary; full spec in doc 08
+
+ER-style polyglot modelling (entities, relations, indexes, vector fields, PII & tenant classifications), physical mappings to Postgres/MySQL/SQL Server, Redis, MongoDB, DynamoDB, Neo4j, Elasticsearch, vector DBs and warehouses; reverse engineering; migrations with approval; data browser & fixtures; DB branching; data nodes (Get, Query, Upsert, Vector search, Graph traverse, Cache, Transaction scope), generated repositories and scoped agent data tools; CDC triggers. Requirements FR-DM-01…11.
+
+### 4.23 Self-improving agents (FR-LRN) — summary; full spec in doc 09
+
+Feedback schema & capture (incl. automatic capture of HITL edits), Learning Center, Learning Loop nodes (Trace Query, Memory Extractor, Example Curator, Few-shot Selector, Prompt Optimizer, Skill Writer, Variant Router, Fine-tune Job, Eval Gate, Human Review, Promote/Canary/Rollback), versioned & revertible learned artifacts, learning budgets and safety. Requirements FR-LRN-01…10.
+
 ---
 
 ## 5. Non-functional requirements (product-level)
@@ -283,4 +306,5 @@ Manual, API, Webhook (signed), Cron, Event bus (internal & external: Kafka, SQS,
 | NFR-05 | Portability: exported code runs with only open-source dependencies (`langgraph`, `langchain`, `deepagents`, provider packages) + an optional thin `agentcanvas-runtime` helper package (Apache-2.0). No lock-in. |
 | NFR-06 | Browser support: latest 2 versions of Chrome, Edge, Firefox, Safari. Desktop-first; read-only/approvals on mobile. |
 | NFR-07 | Internationalization-ready UI; initial English. |
+| NFR-09 | Persistence: no committed checkpoint lost (RPO ≤ 1 min in data plane); right-to-erasure across all persistence layers < 72 h; zero business-data queries without a resolved tenant/user scope. |
 | NFR-08 | Observability of the platform itself: OpenTelemetry everywhere. |

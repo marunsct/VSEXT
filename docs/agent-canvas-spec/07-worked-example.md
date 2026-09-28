@@ -277,6 +277,18 @@ async def make_graph():
 4. The Timeline shows 4 super-steps; clicking step 2 shows state after classification; the user changes `urgency` to `high` and forks → the `escalate` branch runs. Both runs are LangSmith traces with `canvas_node_id` on every span.
 5. "Save as test case" twice; later these become the eval gate for publishing to prod.
 
+## 4b. Adding persistence, memory and data (v0.2)
+
+- **Persistence panel**: dev → SQLite checkpointer; prod → platform Postgres, `durability="sync"` (the workflow sends customer emails), thread TTL 30 days, `messages` as `DeltaChannel`, encryption on. Compiles to `langgraph.json`:
+  ```json
+  { "checkpointer": { "ttl": { "strategy": "delete", "default_ttl": 43200, "sweep_interval_minutes": 10 } },
+    "store": { "index": { "embed": "openai:text-embedding-3-small", "dims": 1536, "fields": ["summary"] },
+               "ttl": { "default_ttl": 129600, "refresh_on_read": true } } }
+  ```
+- **Memory Space** `customer_notes` (namespace `("tenants", context.tenant_id, "customers", state.ticket.requester_id)` — note the requester id comes from the webhook payload, not the model) bound to the agent's `/memories/` route via `CompositeBackend`; the agent reads prior notes and appends new ones with provenance.
+- **Data Studio** `CRM` model (Customer, Ticket) mapped to the company Postgres; *Get Customer* node before the agent populates `state.customer`; the `update_ticket_status` data tool is exposed to the agent with approval on write and an idempotency key `thread_id:reply_drafter:tool_call_id`.
+- **Learning**: HITL edits on `send_reply` are captured as feedback (`hitl.edited`) and feed the *Nightly self-improvement loop* (doc 09 §3.1), which proposes new `reply_drafter` prompt versions behind the eval gate.
+
 ## 5. Publishing
 
 - **Target: AgentCanvas Cloud / LangSmith Deployment** → the generated project is built and deployed; the webhook trigger is registered; the workflow is reachable at `/threads/{id}/runs/stream`, via MCP (`/mcp`) as tool `support_triage`, and via A2A.

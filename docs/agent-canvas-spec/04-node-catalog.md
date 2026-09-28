@@ -98,6 +98,45 @@ Ports are written `name: Type`. Inputs ← , outputs → .
 | Knowledge base | R `Retriever` | vector store retriever with filters, reranker | P1 |
 | Document loader / splitter | N | loaders + text splitters (ingestion workflows) | P2 |
 
+## 6b. Persistence, data & caching (v0.2 — see doc 08)
+
+| Node | Kind | Compiles to | Pri |
+|------|------|-------------|-----|
+| Persistence (workflow chip) | binding | checkpointer / store / cache bindings, durability, TTL | P0 |
+| DB Connection | R | async client/engine factory (Postgres, MySQL, SQL Server, Redis, MongoDB, DynamoDB, Neo4j, Elasticsearch, vector DBs) | P0 |
+| Memory Space | R | typed namespace + index + TTL + writers | P0 |
+| Routed Store | R `Store` | `agentcanvas_runtime.stores.RoutedStore(default=…, routes={…})` | P1 |
+| Recall | N | `runtime.store.search/get` → channel | P0 |
+| Remember / Forget | N | `runtime.store.put/delete` with schema validation & provenance | P0 |
+| Memory tools | R `Tool[]` | generated `search_memory` / `save_memory` scoped to spaces | P0 |
+| Profile loader | M | `@dynamic_prompt` injecting profile memory | P1 |
+| Get / Find (entity) | N | generated repository call | P0 |
+| Query (visual / SQL / Cypher / aggregation) | N | parameterised query | P0–P1 |
+| Insert / Upsert / Update / Delete | N | idempotent repository write | P0 |
+| Vector search | N / R | vector query or retriever | P1 |
+| Graph traverse | N | parameterised Cypher | P2 |
+| Cache get / set | N | Redis get/set with TTL | P0 |
+| Transaction scope | group | single node wrapping a DB transaction | P1 |
+| Data tools | R `Tool[]` | generated scoped CRUD/search tools with HITL on writes | P0 |
+| CDC trigger | T | Postgres logical replication / Mongo change streams / Redis streams | P1 |
+
+## 6c. Learning & feedback (v0.2 — see doc 09)
+
+| Node | Kind | Pri |
+|------|------|-----|
+| Feedback Source | T | P1 |
+| Trace Query | N | P1 |
+| Memory Extractor / Consolidator | N | P1 |
+| Example Curator | N | P1 |
+| Few-shot Selector | M | P1 |
+| Prompt Optimizer | N | P1 |
+| Skill Writer | N | P2 |
+| Variant Router (bandit) | N | P2 |
+| Fine-tune Job | N | P2 |
+| Eval Gate | N | P1 |
+| Human Review (artifact) | N | P1 |
+| Promote / Canary / Rollback | N | P1 |
+
 ## 7. Logic & control flow (N)
 
 | Node | Semantics | Compiles to | Pri |
