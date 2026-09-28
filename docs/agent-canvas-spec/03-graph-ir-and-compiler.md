@@ -201,6 +201,7 @@ Node types are namespaced: `core.*` (portable across adapters) and dialects such
 | `W073` | warning | Append-heavy channel without `DeltaChannel` in a long-running chat workflow |
 | `P001` | error | Node type not supported by the workflow's framework adapter |
 | `P002` | warning | Node supported only via emulation on this adapter (e.g. emulated HITL) |
+| `P004` | warning | Node compiled through the Agent Spec bridge path (non-idiomatic generated code) |
 | `P003` | info | Workflow portability: compiles on N of M installed adapters |
 | `W001` | warning | Cycle without guard (router exit, counter, or explicit `recursion_limit` override) |
 | `W002` | warning | MCP tool with `destructive_hint` not behind approval |

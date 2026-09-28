@@ -1,6 +1,6 @@
 # AgentCanvas — Visual Agentic Workflow Builder
 
-**Functional & Technical Specification — v0.2 (Draft)** — v0.2 adds persistence, multi-database data modelling and self-improving agents (docs 08–10); v0.3 makes the architecture framework-agnostic (doc 11).
+**Functional & Technical Specification — v0.2 (Draft)** — v0.2 adds persistence, multi-database data modelling and self-improving agents (docs 08–10); v0.3 makes the architecture framework-agnostic (doc 11); v0.4 adds source-verified multi-framework research and the full adapter technical specification (doc 12 + adapters/).
 Working name: **AgentCanvas** (rename freely).
 Target frameworks: **LangChain 1.4+, LangGraph 1.2+, Deep Agents 0.7+, LangSmith** (researched against the official `langchain-ai/docs`, `langchain-ai/deepagents`, `langchain-ai/langchain` and `langchain-ai/langgraph` repositories, September 2026).
 
@@ -22,6 +22,7 @@ Target frameworks: **LangChain 1.4+, LangGraph 1.2+, Deep Agents 0.7+, LangSmith
 | 9 | [09-self-improving-agents.md](./09-self-improving-agents.md) | Learning ladder (memory → examples → skills → prompts → routing → fine-tuning), feedback capture, Learning Loop nodes, gates, canary & rollback |
 | 10 | [10-improvement-plan.md](./10-improvement-plan.md) | Research-driven improvement plan v0.1 → v0.2 and beyond |
 | 11 | [11-framework-agnostic-plan.md](./11-framework-agnostic-plan.md) | Framework-agnostic architecture (Core IR + dialects, Adapter SPI, canonical events, hosting modes) and phased plan: LangChain in R1, then interop, OpenAI Agents SDK, Google ADK, Microsoft Agent Framework, CrewAI, Pydantic AI, … |
+| 12 | [12-multi-framework-technical-spec.md](./12-multi-framework-technical-spec.md) | **Source-verified** research on 10 frameworks + protocols (versions, APIs, licences), verified concept matrix, adapter SPI (normative), AG-UI-based canonical events, canonical HITL/resume envelope, persistence/tool/model bridges, hosting wrappers, conformance suite, tiers, detailed delivery plan; per-framework specs in [adapters/](./adapters/) |
 
 Requirement IDs: `FR-` functional, `NFR-` non-functional, `TR-` technical. Priority: **P0** (MVP), **P1** (GA), **P2** (later).
 

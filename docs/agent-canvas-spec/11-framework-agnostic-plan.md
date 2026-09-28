@@ -128,7 +128,7 @@ Wire format aligns with **AG-UI** for UI consumers and **OpenTelemetry GenAI sem
 
 ## 3. Concept mapping across frameworks (planning reference)
 
-> Indicative mapping to scope adapters; each adapter starts with a verification spike against the framework's current release.
+> **Superseded (2026-09-28):** this indicative table has been replaced by the **source-verified** matrix in [doc 12 §A.4](./12-multi-framework-technical-spec.md#a4-verified-concept-matrix-core-ir--framework) and the per-framework specs in [adapters/](./adapters/). Notable corrections: OpenAI Agents SDK, Google ADK, MAF and Pydantic AI have **native** tool-approval HITL; Google ADK 2.x has a native **graph `Workflow`** engine; MAF workflows are Pregel-style with checkpoint storage; CrewAI Flows have a declarative **`FlowDefinition`**. Kept below for history.
 
 | Core concept | LangChain / LangGraph / Deep Agents (R1) | OpenAI Agents SDK | Google ADK | Microsoft Agent Framework | CrewAI | Pydantic AI |
 |--------------|------------------------------------------|-------------------|------------|---------------------------|--------|-------------|
@@ -180,6 +180,8 @@ Deliver A1–A10. **Exit criteria:** LangChain adapter passes all tests through 
 - **Wrapped Agent node**: user points to an agent object in the Workspace (OpenAI Agents SDK, Google ADK, CrewAI crew, Claude Agent SDK, Strands, Pydantic AI…); we generate the Functional API wrapper (`@entrypoint`/`@task`, `deployments-wrap-sdk` for ADK) so it runs on Agent Server inside a LangGraph workflow with threads, streaming and tracing.
 - Minimal translators for token/tool events where the framework exposes callbacks/OTel.
 - **Exit:** 5 framework agents usable as nodes in LangChain workflows; HITL approvals on them via emulation.
+
+> **Ordering superseded** by [doc 12 §B.2 / §D.1](./12-multi-framework-technical-spec.md#b2-revised-adapter-order-replaces-doc-11-5-f2f4-ordering): OpenAI Agents SDK (agent tier) **and** Google ADK (full T1) in parallel, then Microsoft Agent Framework, CrewAI, Pydantic AI / Strands / LlamaIndex, Mastra.
 
 ### Phase F2 — First full second adapter (months +3 to +7)
 Recommended first: **OpenAI Agents SDK** (small, well-defined surface — agents, tools, handoffs, guardrails, sessions — so it validates the SPI with limited risk and broad demand).
