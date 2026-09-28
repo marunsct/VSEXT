@@ -37,6 +37,8 @@
 
 > **v0.2 delta:** persistence, Data Studio and self-improvement scope is sequenced into these phases in [10-improvement-plan.md §3](./10-improvement-plan.md#3-updated-delivery-sequencing-delta-to-doc-06). Add ~2 engineers (data modelling/codegen, persistence/data plane) and ~0.5 ML engineer (learning loops) to the team below.
 
+> **v0.3 delta:** framework-agnostic foundations (Core IR/dialect split, Adapter SPI, canonical events, import-boundary CI — ≈15 % of R1 effort) are built in Phases 0–1; black-box framework interop ships with GA; full adapters for OpenAI Agents SDK → Google ADK → Microsoft Agent Framework → CrewAI / Pydantic AI / LlamaIndex / Mastra follow in Phase 3+. See [doc 11 §5](./11-framework-agnostic-plan.md#5-phased-plan-to-extend-support).
+
 ## 2. Suggested team (for MVP → GA)
 
 | Area | Headcount |
@@ -64,6 +66,7 @@
 | R10 | **Persistence backend immaturity** — non-Postgres checkpointers/stores and Agent Server custom checkpointer/store hooks are alpha or community-maintained | Data loss / resume failures | Postgres default; conformance gate; staged rollout per backend; clear support tiers |
 | R11 | **Self-improvement regressions or memory poisoning** | Quality & safety | Gated ladder (doc 09), quarantine, provenance, auto-rollback |
 | R12 | **Business-data access by agents** | Data leaks | Scoped repositories, least privilege, HITL writes, audit |
+| R13 | **Framework-agnosticism dilutes R1** or yields lowest-common-denominator UX | Delay / weak product | 15 % cap on F0 work; portable core + native dialects; no second adapter before GA |
 | R9 | **Licensing** | Legal | Generated code & runtime helper Apache-2.0; verify licenses of LangGraph Agent Server for self-hosted redistribution (the open-source `langgraph dev` server vs licensed Agent Server) — design the data plane to work with either. |
 
 ## 4. Open questions (decisions needed)

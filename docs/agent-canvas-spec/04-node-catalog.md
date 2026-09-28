@@ -2,6 +2,7 @@
 
 Legend — **Kind**: `R` resource (wired, constructed once), `N` runtime node (a LangGraph step), `M` middleware (wired into an agent's ordered middleware slot), `T` trigger, `O` output/channel. **Pri**: P0 / P1 / P2.
 Ports are written `name: Type`. Inputs ← , outputs → .
+**Framework scope (v0.3):** node types are either *core* (portable: triggers, logic & control flow, HITL, data & transform, memory, outputs, generic Agent/Subagent/Model/Tool/MCP) or *dialect* (framework-specific: Deep Agent harness options, LangChain middleware, `Send`, Deep Agents backends…). The "Compiles to" column describes the **LangChain adapter** (R1). Other adapters publish their own mappings and support levels (doc 11).
 
 ## 1. Triggers (T)
 

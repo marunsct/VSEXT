@@ -26,6 +26,7 @@ This is the heart of the product: how a picture becomes a correct, idiomatic Lan
   "name": "Support Triage",
   "kind": "workflow",                  // workflow | component
   "target_hints": { "language": "python", "runtime": "agent_server" },
+  "framework": "langchain",            // v0.3: primary adapter (doc 11); nodes may set "engine" in mixed graphs (later phases)
   "state": {                           // graph state schema
     "channels": [
       { "name": "messages", "type": {"$ref": "#/types/Messages"}, "reducer": "add_messages", "io": "inout" },
@@ -143,6 +144,9 @@ Special node IDs `START` and `END` are implicit.
 - Layout (`x`,`y`, size, color) stored in a sibling `layout` document so that moving nodes never changes the IR hash.
 - Canonical JSON (RFC 8785 JCS) → `ir_hash` (SHA-256) used for caching builds and dedup.
 
+### 2.7 Core IR vs framework dialects (v0.3)
+Node types are namespaced: `core.*` (portable across adapters) and dialects such as `langchain.*` / `langgraph.*` (R1) and later `openai.*`, `adk.*`, `msaf.*`, `crewai.*`. Core nodes may carry `x-<adapter>` override blocks. Lowering, codegen and interpretation (§5–7) are performed by the selected **Framework Adapter** — everything below describes the **LangChain adapter**. See [doc 11](./11-framework-agnostic-plan.md).
+
 ## 3. Type system
 
 ### 3.1 Port types
@@ -195,6 +199,9 @@ Special node IDs `START` and `END` are implicit.
 | `W071` | warning | Concurrent writes to the same entity from parallel branches without a conflict strategy |
 | `W072` | warning | Checkpointer binding has not passed the conformance suite |
 | `W073` | warning | Append-heavy channel without `DeltaChannel` in a long-running chat workflow |
+| `P001` | error | Node type not supported by the workflow's framework adapter |
+| `P002` | warning | Node supported only via emulation on this adapter (e.g. emulated HITL) |
+| `P003` | info | Workflow portability: compiles on N of M installed adapters |
 | `W001` | warning | Cycle without guard (router exit, counter, or explicit `recursion_limit` override) |
 | `W002` | warning | MCP tool with `destructive_hint` not behind approval |
 | `W003` | warning | Channel written but never read |

@@ -8,6 +8,8 @@
 4. **Everything is an event.** Edits, runs, interrupts, deploys and triggers flow through an event bus; the UI subscribes via WebSocket.
 5. **Generated code is the contract.** The compiled Python project is exactly what runs in prod; debug instrumentation is added via middleware/callbacks, not by changing semantics.
 
+6. **Framework-agnostic core (v0.3).** All framework-specific logic (LangChain/LangGraph/Deep Agents in R1) lives in **adapter packages** behind the Framework Adapter SPI; services consume Core IR and canonical run events only; import boundaries enforced in CI. See [doc 11](./11-framework-agnostic-plan.md).
+
 ## 2. High-level architecture
 
 ```
@@ -159,6 +161,9 @@ Conformance testing of persistence bindings, TTL sweeps, checkpoint pruning/arch
 
 ### 4.13 Learning Service
 Runs Learning Loops (doc 09): trace queries, memory extraction, example curation, prompt optimisation, eval gates, human review cards, canary routing and auto-rollback. Implemented as AgentCanvas workflows deployed to a dedicated learning assistant (dogfooding) plus Temporal for long jobs (fine-tuning).
+
+### 4.14 Adapter Registry (v0.3)
+Registers installed Framework Adapters (manifest, capability matrix, node library, supported stacks & hosting modes); compiler workers and runtime images load adapters by id/version; exposes portability analysis to the UI. R1 contains only `agentcanvas-adapter-langchain`.
 
 ## 5. Two execution modes (critical for WYSIWYG)
 

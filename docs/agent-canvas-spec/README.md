@@ -1,6 +1,6 @@
 # AgentCanvas — Visual Agentic Workflow Builder
 
-**Functional & Technical Specification — v0.2 (Draft)** — v0.2 adds persistence, multi-database data modelling and self-improving agents (docs 08–10).
+**Functional & Technical Specification — v0.2 (Draft)** — v0.2 adds persistence, multi-database data modelling and self-improving agents (docs 08–10); v0.3 makes the architecture framework-agnostic (doc 11).
 Working name: **AgentCanvas** (rename freely).
 Target frameworks: **LangChain 1.4+, LangGraph 1.2+, Deep Agents 0.7+, LangSmith** (researched against the official `langchain-ai/docs`, `langchain-ai/deepagents`, `langchain-ai/langchain` and `langchain-ai/langgraph` repositories, September 2026).
 
@@ -21,6 +21,7 @@ Target frameworks: **LangChain 1.4+, LangGraph 1.2+, Deep Agents 0.7+, LangSmith
 | 8 | [08-persistence-memory-data-modeling.md](./08-persistence-memory-data-modeling.md) | Persistence Map (6 layers), checkpointer bindings (Postgres, Redis, MongoDB, …), long-term memory spaces, RoutedStore over multiple DBs, caching, **Data Studio** (visual polyglot data modelling), data nodes & tools, side-effect correctness |
 | 9 | [09-self-improving-agents.md](./09-self-improving-agents.md) | Learning ladder (memory → examples → skills → prompts → routing → fine-tuning), feedback capture, Learning Loop nodes, gates, canary & rollback |
 | 10 | [10-improvement-plan.md](./10-improvement-plan.md) | Research-driven improvement plan v0.1 → v0.2 and beyond |
+| 11 | [11-framework-agnostic-plan.md](./11-framework-agnostic-plan.md) | Framework-agnostic architecture (Core IR + dialects, Adapter SPI, canonical events, hosting modes) and phased plan: LangChain in R1, then interop, OpenAI Agents SDK, Google ADK, Microsoft Agent Framework, CrewAI, Pydantic AI, … |
 
 Requirement IDs: `FR-` functional, `NFR-` non-functional, `TR-` technical. Priority: **P0** (MVP), **P1** (GA), **P2** (later).
 
@@ -56,6 +57,7 @@ A literal "what you see is what you get" for agents has to solve something Comfy
 | D10 | **Canvas-native AI Copilot** that edits the IR through the same tools a human uses (add node, wire, configure), is itself a Deep Agent, and must pass the validator before changes apply. | "Describe your workflow" → graph; also lint/auto-fix/explain. |
 | D11 | **Persistence is explicit and layered** (execution state / long-term memory / agent files / business data / caches / learning artifacts), bound per environment to real databases, with a visual **Data Studio** for business data. | Agents that remember, learn and act on data need clear ownership, retention and safety per layer (doc 08). |
 | D12 | **Self-improvement is a governed ladder**, not magic: every learned artifact is versioned, evaluated, reviewable and revertible. | Learning without gates degrades production silently (doc 09). |
+| D13 | **Framework-agnostic core, LangChain first.** The IR is split into a portable core plus namespaced framework dialects; all framework code lives behind a Framework Adapter SPI; the platform consumes canonical run events. R1 ships only the LangChain adapter. | Lets us add OpenAI Agents SDK, Google ADK, Microsoft Agent Framework, CrewAI, etc. as adapters without rewriting the product (doc 11). |
 
 ## 4. How AgentCanvas maps to the LangChain ecosystem
 
@@ -124,4 +126,6 @@ A literal "what you see is what you get" for agents has to solve something Comfy
 | **Memory Space** | A typed, namespaced region of long-term memory (store) with index, TTL, writers and PII policy. |
 | **Data Model** | A Data Studio ER model; entities map to one or more physical stores. |
 | **Learning Loop** | A workflow that turns signals (feedback, outcomes, evals) into versioned artifacts (memories, examples, prompts, skills, models) behind gates. |
+| **Adapter** | A package implementing the Framework Adapter SPI for one agent framework (LangChain is adapter #1). |
+| **Dialect** | Framework-specific node types/config (e.g. `langchain.deep_agent`) layered on the portable Core IR. |
 | **Target** | A code-generation/deployment target (Python-LangGraph, Managed Deep Agents project, TS, etc.). |
