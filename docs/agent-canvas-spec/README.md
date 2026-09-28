@@ -1,6 +1,6 @@
 # AgentCanvas — Visual Agentic Workflow Builder
 
-**Functional & Technical Specification — v0.2 (Draft)** — v0.2 adds persistence, multi-database data modelling and self-improving agents (docs 08–10); v0.3 makes the architecture framework-agnostic (doc 11); v0.4 adds source-verified multi-framework research and the full adapter technical specification (doc 12 + adapters/).
+**Functional & Technical Specification — v0.5 (Draft)** — **v0.5 adds a deep review ([13](./13-deep-review-report.md)) and a beginner [Build Guide](./build-guide/README.md) with a tested reference implementation.** v0.2 adds persistence, multi-database data modelling and self-improving agents (docs 08–10); v0.3 makes the architecture framework-agnostic (doc 11); v0.4 adds source-verified multi-framework research and the full adapter technical specification (doc 12 + adapters/).
 Working name: **AgentCanvas** (rename freely).
 Target frameworks: **LangChain 1.4+, LangGraph 1.2+, Deep Agents 0.7+, LangSmith** (researched against the official `langchain-ai/docs`, `langchain-ai/deepagents`, `langchain-ai/langchain` and `langchain-ai/langgraph` repositories, September 2026).
 
@@ -23,6 +23,8 @@ Target frameworks: **LangChain 1.4+, LangGraph 1.2+, Deep Agents 0.7+, LangSmith
 | 10 | [10-improvement-plan.md](./10-improvement-plan.md) | Research-driven improvement plan v0.1 → v0.2 and beyond |
 | 11 | [11-framework-agnostic-plan.md](./11-framework-agnostic-plan.md) | Framework-agnostic architecture (Core IR + dialects, Adapter SPI, canonical events, hosting modes) and phased plan: LangChain in R1, then interop, OpenAI Agents SDK, Google ADK, Microsoft Agent Framework, CrewAI, Pydantic AI, … |
 | 12 | [12-multi-framework-technical-spec.md](./12-multi-framework-technical-spec.md) | **Source-verified** research on 10 frameworks + protocols (versions, APIs, licences), verified concept matrix, adapter SPI (normative), AG-UI-based canonical events, canonical HITL/resume envelope, persistence/tool/model bridges, hosting wrappers, conformance suite, tiers, detailed delivery plan; per-framework specs in [adapters/](./adapters/) |
+| 13 | [13-deep-review-report.md](./13-deep-review-report.md) | Deep review v0.4 → v0.5: verified API errors, runtime pitfalls, contradictions, decisions (ADRs), scope changes |
+| **BG** | [**build-guide/**](./build-guide/README.md) | **Start here to build the product:** concepts primer, environment setup, walking-skeleton tutorial with tested reference code (backend + canvas), milestone/ticket plan M0–M9, backend/frontend/compiler guides, testing, deployment, security checklist, FAQ, traceability |
 
 Requirement IDs: `FR-` functional, `NFR-` non-functional, `TR-` technical. Priority: **P0** (MVP), **P1** (GA), **P2** (later).
 
@@ -51,7 +53,7 @@ A literal "what you see is what you get" for agents has to solve something Comfy
 | D3 | **Three abstraction tiers on one canvas**: *Agent tier* (a Deep Agent or `create_agent` as one rich widget with slots), *Graph tier* (explicit `StateGraph` with routers, fan-out, interrupts), *Code tier* (script nodes & custom components). Users zoom between tiers. | Beginners stay in the Agent tier; architects build explicit graphs; engineers write code — all in the same artifact. |
 | D4 | **Three kinds of edges**: *Flow* edges (runtime control transitions), *Wiring* edges (compile-time dependency injection: model→agent, tool→agent, backend→agent — ComfyUI style), *Data* edges (explicit state-channel mapping between nodes/subgraphs). Visually distinct. | ComfyUI is pure dataflow; LangGraph is a state machine over shared state. Unifying both is the core UX innovation. |
 | D5 | **Typed ports with a structural type system** (e.g. `ChatModel`, `Tool[]`, `Messages`, `JSON<Schema>`, `Backend`, `Subagent`) and live type-checking while wiring. | Invalid wiring is prevented at edit time, not at run time. |
-| D6 | **LangGraph is the runtime; we do not build our own orchestration engine.** Durable execution, checkpoints, interrupts, streaming, stores are all LangGraph's. | Maximum leverage, zero divergence from the ecosystem, the generated code is portable. |
+| D6 | **LangGraph is the runtime; we do not build our own orchestration engine.** Durable execution, checkpoints, interrupts, streaming, stores are all LangGraph's. **v0.5:** the MVP hosts graphs in its own open-source runner (FastAPI + LangGraph library + Postgres); LangSmith Agent Server / Deployment is a publish target (review D-01). | Maximum leverage, zero divergence from the ecosystem, the generated code is portable, no runtime licence dependency. |
 | D7 | **LangSmith is the observability, evaluation and (optional) deployment plane.** We embed it, we don't replace it. Self-hosted/OTel path supported. | Tracing, evals, datasets, prompt hub/Context Hub, Agent Server, sandboxes already exist. |
 | D8 | **All user code runs in sandboxes**, never inside the control plane. | Security; multi-tenancy. |
 | D9 | **Deep Agents is the default "Agent" widget**; plain `create_agent` is the "Lite Agent". | Deep Agents gives planning, virtual filesystem, subagents, skills, memory, summarization and HITL out of the box — the batteries non-coders need. |
@@ -74,7 +76,7 @@ A literal "what you see is what you get" for agents has to solve something Comfy
                     memory, permissions, interpreters (QuickJS/PTC), RubricMiddleware, profiles
    LangGraph 1.2  : StateGraph / Functional API, Send, Command, interrupt, checkpointers, stores,
                     DeltaChannel, RetryPolicy/CachePolicy, per-node timeouts & error handlers,
-                    RunControl (graceful drain), stream_events v3, time travel
+                    RunControl (graceful drain, `langgraph.runtime`), stream_events v3 (experimental), time travel
    LangSmith      : tracing, datasets, experiments, online evals, annotation queues, Studio,
                     Agent Server (assistants/threads/runs/crons/webhooks/MCP/A2A),
                     Managed Deep Agents, Context Hub, LLM Gateway, Sandboxes, Fleet

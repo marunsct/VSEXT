@@ -149,7 +149,7 @@ The **Deep Agent** widget is the flagship. It exposes every `create_deep_agent` 
 | FR-RUN-09 | **Node caching**: nodes flagged cacheable are memoized by input hash (`CachePolicy`, TTL); changing a node invalidates only downstream caches. | P1 |
 | FR-RUN-10 | Multiple concurrent test threads; thread list with titles; resume any thread. | P0 |
 | FR-RUN-11 | **Double-texting policy** selection for published agents (reject / enqueue / interrupt / rollback). | P1 |
-| FR-RUN-12 | Cancel and **graceful drain** (`RunControl.request_drain()`), resume later from the saved checkpoint. | P1 |
+| FR-RUN-12 | Cancel and **graceful drain** (`langgraph.runtime.RunControl.request_drain()`; the run raises `langgraph.errors.GraphDrained`), resume later from the saved checkpoint. | P1 |
 | FR-RUN-13 | Run cost & latency displayed per node and per run (tokens, $, ms) from trace data. | P0 |
 
 ### 4.7 Human-in-the-loop & Inbox (FR-HITL)

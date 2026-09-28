@@ -73,10 +73,10 @@
 
 ## 4. Open questions (decisions needed)
 
-1. **Runtime licensing & topology**: run our own fleet of self-hosted Agent Servers (requires LangSmith license for production self-hosting) vs. always deploying into the customer's LangSmith account vs. building on the open-source LangGraph runtime + our own API layer. *Recommendation:* support "customer's LangSmith Deployment" and "export" first; evaluate licensing for the managed cloud runtime.
+1. ✅ **Decided in v0.5 (review D-01):** own open-source runner for MVP; LangSmith Deployment as publish target. *Original question:* **Runtime licensing & topology**: run our own fleet of self-hosted Agent Servers (requires LangSmith license for production self-hosting) vs. always deploying into the customer's LangSmith account vs. building on the open-source LangGraph runtime + our own API layer. *Recommendation:* support "customer's LangSmith Deployment" and "export" first; evaluate licensing for the managed cloud runtime.
 2. **Trusted in-process code**: default for enterprise dedicated tenants only?
-3. **Expression language**: CEL vs JSONata vs sandboxed Jinja — *recommendation:* CEL for conditions (safe, typed), sandboxed Jinja for templates.
-4. **Canvas library**: React Flow (default) vs LiteGraph fork for ComfyUI familiarity — prototype both with a 500-node graph in week 2.
+3. ✅ **Decided (D-02): CEL + sandboxed Jinja.** *Original:* **Expression language**: CEL vs JSONata vs sandboxed Jinja — *recommendation:* CEL for conditions (safe, typed), sandboxed Jinja for templates.
+4. ✅ **Decided (D-03): React Flow.** *Original:* **Canvas library**: React Flow (default) vs LiteGraph fork for ComfyUI familiarity — prototype both with a 500-node graph in week 2.
 5. **Pricing model**: seats + runtime usage (runs/compute) + pass-through model cost (or BYO keys).
 6. **Target languages beyond Python/TS**: likely unnecessary; Java/Go via exposing workflows as APIs instead.
 7. **Name** of the product.

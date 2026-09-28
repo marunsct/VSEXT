@@ -322,9 +322,9 @@ Each node type's manifest declares `targets: {"python": "full", "mda": "full|par
 ## 7. Interpreter (dev runs)
 
 `agentcanvas_runtime.build(plan, debug_opts) -> CompiledStateGraph`:
-- Uses the **same node implementation library** as codegen (the generated code for built-in nodes is a thin call into `agentcanvas_runtime.nodes.<type>.build(config)` OR inlined — controlled by a compiler flag `--inline` for fully dependency-free export). Default export uses inlined idiomatic code; equivalence tested.
+- Uses the **same node implementation library** as codegen. **Decision (v0.5, review C-03, ADR 0004):** generated code calls the shared node library (`agentcanvas.runtime.nodes` → published as `agentcanvas-runtime`) and assembles the graph with plain LangGraph calls; this is what the reference implementation does and what `test_generated_code_matches_interpreter` verifies. A fully inlined, dependency-free "clean eject" (`--inline`) is a P2 option. (Superseded wording: "Default export uses inlined idiomatic code"); equivalence tested.
 - Debug options: breakpoints → `interrupt_before/after`; pins → wrapper node returning pinned output; mocks → model replaced by `GenericFakeChatModel`/scripted model or `LLMToolEmulator`, tools replaced by cassette players; caches → `InMemoryCache`/Redis cache with `CachePolicy`.
-- Registered in the dev Agent Server through a **graph factory** keyed by `(workflow_id, ir_hash)`; LRU cache of built graphs.
+- **MVP (v0.5):** built per run by the AgentCanvas runner (`build_graph(wf, resources, checkpointer)`), optionally cached by `(workflow_id, ir_hash)`. Registering the factory in a LangGraph Agent Server is a later hosting option.
 
 ## 8. Source maps & trace mapping
 - `_canvas_sourcemap.json`: `{ "n_7f3a": { "identifier": "reply_drafter", "file": "agents/reply_drafter.py", "lines": [12, 58] } }`.

@@ -74,7 +74,7 @@
 | Language | **Python 3.12+** for Compiler, Validator, Run Orchestrator, Workspace service; **FastAPI** + Pydantic v2; uv for packaging | The compiler must import and introspect LangChain/LangGraph types, run LibCST/ruff/pyright, and share schemas with the interpreter. One language for IR models end-to-end (Pydantic → JSON Schema → TS types generated for the frontend). |
 | Collab service | Node.js (`y-websocket` / Hocuspocus) or `ypy-websocket` | Mature Yjs server. |
 | API style | REST (OpenAPI 3.1) + WebSocket; GraphQL optional for BFF | OpenAPI → generated TS client. |
-| Async jobs | Arq/Celery-free: **Temporal** (or Hatchet) for long control-plane workflows (deploys, eval experiments, ingestion) | Durable, retryable, observable. |
+| Async jobs | **MVP:** `asyncio` background tasks + APScheduler for cron (no job framework). **GA:** **Temporal** (or Hatchet) for long control-plane workflows (deploys, eval experiments, ingestion) | Durable, retryable, observable. |
 | DB | **PostgreSQL 16** (control DB) with row-level security per tenant | Relational integrity, JSONB for IR snapshots. |
 | Cache/pubsub | Redis 7 | Locks, presence, rate limiting, stream fan-out. |
 | Event bus | NATS JetStream (default) / Kafka (enterprise) | Triggers, audit, run events. |
@@ -118,6 +118,8 @@
 - Schema migration of IR documents (`ir_version`) with upgrade functions.
 
 ### 4.2 Collaboration Service
+
+> **v0.5:** post-MVP. The MVP uses REST autosave with optimistic locking (`If-Match` / HTTP 409) — review C-07.
 - Yjs documents per workflow (`Y.Map` for nodes, edges, state schema; `Y.Array` for ordering), awareness (cursors, selection), persistence snapshots to Postgres every N updates.
 - Server-side validation hook: rejects updates that break IR structural invariants (not semantic validity — drafts may be invalid).
 
@@ -181,9 +183,10 @@ Agent Server run ──(stream_mode: values/updates/messages/custom/debug/tasks/
 Run Orchestrator normalizer ──► Redis/NATS topic run.{run_id} ──► WS gateway ──► Browser
 ```
 
-- For Python-side consumers we use LangGraph's **v2 typed stream parts** (`type`, `ns`, `data`) and, where in-process, the **v3 `stream_events`** protocol with projections (`messages`, `lifecycle`, `subgraphs`, `values`) and custom transformers.
-- **Node mapping**: every node the compiler emits is registered with metadata `{"canvas_node_id": ...}` and tags; `tasks`/`debug` events carry node names which are 1:1 with canvas IDs (node names are `slug__nodeid`). Subagent events carry namespaces (`ns`) which map to nested canvases.
-- UI event schema (normalized):
+- The runner uses LangGraph's **v2 typed stream parts** (`graph.astream(..., version="v2")`: `type`, `ns`, `data`). The **v3 `stream_events`** protocol exists but emits an *experimental* warning in langgraph 1.2.12 — adopt it only when stable (review P-05).
+- **Node mapping**: LangGraph node name = IR node `name` (unique snake_case); the runner keeps a `name → canvas_node_id` index, and every node also carries `metadata={"canvas_node_id": ...}` for traces (review C-01). Subagent events carry namespaces (`ns`) which map to nested canvases.
+- **Wire format:** the canonical AG-UI-based events of [doc 12 §C.3](./12-multi-framework-technical-spec.md#c3-canonical-run-event-protocol-ag-ui-based) are authoritative (review C-02); the envelope below is the transport wrapper used when events are relayed via a bus.
+- UI event envelope (relay):
 
 ```jsonc
 {
@@ -197,6 +200,8 @@ Run Orchestrator normalizer ──► Redis/NATS topic run.{run_id} ──► WS
 - Reconnect: clients resume from `seq` (events buffered 15 min in JetStream); after that, rebuild from checkpoints/history.
 
 ## 7. Data model (control DB, simplified)
+
+> **v0.5:** the authoritative MVP DDL is [build-guide/reference/infra/schema.sql](./build-guide/reference/infra/schema.sql) (verified on Postgres 16), explained in [build-guide/05-backend-guide.md §3](./build-guide/05-backend-guide.md#3-database-schema-mvp). The table below is the long-term (GA) model (review C-04).
 
 ```sql
 org(id, name, plan, region, settings jsonb, created_at)

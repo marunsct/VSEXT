@@ -156,7 +156,7 @@ Ports are written `name: Type`. Inputs ← , outputs → .
 | Subgraph (inline) | nested graph | compiled subgraph node | P0 |
 | Call workflow | invoke another published workflow | `RemoteGraph` node | P1 |
 | Deferred node | runs when all other branches done | `add_node(..., defer=True)` | P2 |
-| Error handler | receives `NodeError`, routes/compensates | `error_handler=` target | P1 |
+| Error handler | receives `langgraph.errors.NodeError`, routes/compensates | `error_handler=` target | P1 |
 | End / Return | explicit output mapping | edge to END + output schema | P0 |
 
 ## 8. Human-in-the-loop (N)

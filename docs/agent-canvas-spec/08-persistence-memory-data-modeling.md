@@ -46,6 +46,8 @@ Design rules that the validator and UI enforce:
 
 ### 2.2 Technical design
 
+> **Verified caveat (review P-04):** `langgraph-checkpoint-redis` (0.5.x) requires Redis with RediSearch + RedisJSON — Redis 8 or Redis Stack. Plain Redis 7 fails with `unknown command 'FT.INFO'`. Binding validation must check `MODULE LIST` before accepting a Redis binding.
+
 - **One checkpointer per compiled graph / deployment.** LangGraph attaches a single checkpointer at `compile()`; subgraphs share it via checkpoint namespaces. AgentCanvas therefore models the checkpointer as a **workflow-level binding**, not a free node (the canvas shows it as a pinned "Persistence" chip on START, which opens the panel).
 - **Agent Server targets** (our cloud, LangSmith Deployment): do **not** pass a checkpointer in code (the server injects it). The compiler writes `langgraph.json`:
   ```json
@@ -155,13 +157,16 @@ A second canvas type, the **Data Model canvas** (ER-style), lives next to workfl
 
 ### 5.2 Modelling features
 
+> **Priority note (review S-04, 2026-09-28):** Data Studio is scheduled **after the MVP** (GA). Its former P0 items are now P1; MVP agents reach business data through HTTP/MCP tools and script nodes.
+
+
 | ID | Requirement | Pri |
 |----|-------------|-----|
-| FR-DM-01 | Entities with fields: types (string, text, int, decimal, bool, date/time, uuid, enum, json, array, reference, **vector(dims)**, file/blob ref), nullability, defaults, constraints (unique, check, regex, min/max), descriptions (used as LLM tool/field descriptions). | P0 |
-| FR-DM-02 | Relations: 1:1, 1:N, N:M (join entity auto-generated), cascade rules; drawn by dragging between fields. | P0 |
+| FR-DM-01 | Entities with fields: types (string, text, int, decimal, bool, date/time, uuid, enum, json, array, reference, **vector(dims)**, file/blob ref), nullability, defaults, constraints (unique, check, regex, min/max), descriptions (used as LLM tool/field descriptions). | P1 |
+| FR-DM-02 | Relations: 1:1, 1:N, N:M (join entity auto-generated), cascade rules; drawn by dragging between fields. | P1 |
 | FR-DM-03 | Indexes (b-tree, unique, composite, full-text, vector HNSW/IVF, TTL index), partitions. | P1 |
-| FR-DM-04 | **Field classifications**: PII (email, phone, name, address, government id, payment), secret, **tenant scope** (row owner/tenant key), audit fields (created_at/by, updated_at/by) auto-added option. | P0 |
-| FR-DM-05 | **Physical mappings** per entity (one or more): **Postgres/MySQL/SQL Server** table; **MongoDB** collection (+ JSON-schema validator, indexes); **Redis** (Hash / RedisJSON with key pattern, TTL, RediSearch/RedisVL index); **DynamoDB** (PK/SK design helper, GSIs); **Neo4j/Memgraph** node label & relationship types; **Elasticsearch/OpenSearch** index mapping; **vector DB** collection (pgvector, Qdrant, Pinecone, Weaviate, Milvus); **warehouse** read-only views (Snowflake/BigQuery). Mapping editor shows store-specific options only. | P0 (Postgres, Redis, Mongo), P1 (Dynamo, Neo4j, Elastic, vector DBs), P2 (warehouses, others) |
+| FR-DM-04 | **Field classifications**: PII (email, phone, name, address, government id, payment), secret, **tenant scope** (row owner/tenant key), audit fields (created_at/by, updated_at/by) auto-added option. | P1 |
+| FR-DM-05 | **Physical mappings** per entity (one or more): **Postgres/MySQL/SQL Server** table; **MongoDB** collection (+ JSON-schema validator, indexes); **Redis** (Hash / RedisJSON with key pattern, TTL, RediSearch/RedisVL index); **DynamoDB** (PK/SK design helper, GSIs); **Neo4j/Memgraph** node label & relationship types; **Elasticsearch/OpenSearch** index mapping; **vector DB** collection (pgvector, Qdrant, Pinecone, Weaviate, Milvus); **warehouse** read-only views (Snowflake/BigQuery). Mapping editor shows store-specific options only. | P1 (Postgres, Redis, Mongo), P2 (Dynamo, Neo4j, Elastic, vector DBs, warehouses) |
 | FR-DM-06 | **Reverse engineering**: connect an existing DB → introspect schema (tables, FKs, indexes; Mongo sampling-based schema inference; Redis key-pattern sampling; Neo4j `db.schema.visualization`) → editable model. | P1 |
 | FR-DM-07 | **Migrations**: model diff → migration plan per store (Alembic for SQL; index/validator scripts for Mongo; RedisVL index changes; Cypher constraint scripts); preview SQL/DDL; destructive-change warnings; approval workflow; apply per environment; rollback scripts; migration history. | P1 |
 | FR-DM-08 | **Data browser**: view/edit rows/docs/keys with filters, seed data & fixtures per environment, anonymised prod snapshots for dev (masking by classification). | P1 |
@@ -282,7 +287,7 @@ bindings:
 - **Connection Broker** (new data-plane service): holds pooled connections/credentials for customer databases, issues short-lived credentials to runs and sandboxes, enforces network policies (private link / VPC peering / SSH tunnel), records data-access audit.
 - **Data Studio service** (control plane): model CRUD & versioning, introspection jobs (run in the data plane via the broker — the control plane never connects to customer DBs directly), migration planning (Alembic autogenerate in a sandbox against a shadow DB), code generation.
 - **Retention worker**: TTL sweeps beyond what backends provide, archival exports, right-to-erasure orchestration across checkpointer (delete thread), store (delete namespaces/items), business data (generated erase hooks), traces (LangSmith data deletion).
-- Control-DB additions:
+- Control-DB additions (GA; the MVP schema is [build-guide/reference/infra/schema.sql](./build-guide/reference/infra/schema.sql)):
 ```sql
 data_model(id, project_id, name, current_version_id)
 data_model_version(id, data_model_id, semver, model jsonb, created_by, created_at)
