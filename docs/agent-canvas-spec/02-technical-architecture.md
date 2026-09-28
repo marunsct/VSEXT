@@ -7,7 +7,6 @@
 3. **Control plane / data plane split.** The control plane (editor, IR store, compiler, registry, auth) never executes user code or LLM calls. The data plane (Agent Server workers + sandboxes) does, per tenant, per environment.
 4. **Everything is an event.** Edits, runs, interrupts, deploys and triggers flow through an event bus; the UI subscribes via WebSocket.
 5. **Generated code is the contract.** The compiled Python project is exactly what runs in prod; debug instrumentation is added via middleware/callbacks, not by changing semantics.
-
 6. **Framework-agnostic core (v0.3).** All framework-specific logic (LangChain/LangGraph/Deep Agents in R1) lives in **adapter packages** behind the Framework Adapter SPI; services consume Core IR and canonical run events only; import boundaries enforced in CI. See [doc 11](./11-framework-agnostic-plan.md).
 
 ## 2. High-level architecture
